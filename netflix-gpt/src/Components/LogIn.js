@@ -1,12 +1,42 @@
-import React, { useState } from 'react'
-import Header from './Header'
-import { Link } from 'react-router-dom'
+import React, { useRef, useState } from 'react'
+import Header from './Header';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword} from 'firebase/auth';
+import { Validator } from '../utils/Validator';
+import { auth } from '../utils/firebase';
 
 const LogIn = () => {
     const [isSignUp, setIsSignUp] = useState(false);
+    const [errorMessage, setErroRMessage] = useState(null)
+    const email = useRef(null);
+    const password = useRef(null);
 
     const toggleFunctionality = () => {
       setIsSignUp(!isSignUp)
+    }
+
+    const onSubmitClick = () => {
+        // setErroRMessage(Validator(email.current.value, password.current.value));
+        if(isSignUp) {
+        createUserWithEmailAndPassword(auth, email.current.value, password.current.value)
+          .then((userCredential) => {
+            const user = userCredential.user;
+            console.log("user", user);
+          })
+        }
+
+        if(!isSignUp) {
+            signInWithEmailAndPassword(auth, email.current.value, password.current.value)
+                .then((userCredential) => {
+                    // Signed in 
+                    const user = userCredential.user;
+                    console.log("user", user)
+                    // ...
+                })
+                .catch((error) => {
+                    const errorCode = error.code;
+                    const errorMessage = error.message;
+  });
+        }
     }
 
     return (
@@ -16,17 +46,17 @@ const LogIn = () => {
                 <img src='https://assets.nflxext.com/ffe/siteui/vlv3/7ca5b7c7-20aa-42a8-a278-f801b0d65fa1/fb548c0a-8582-43c5-9fba-cd98bf27452f/IN-en-20240326-popsignuptwoweeks-perspective_alpha_website_small.jpg' alt='background-image' />
             </div>
             <div class="absolute max-w-sm sm:max-w-md m-auto my-36 py-10 px-8 sm:py-16 sm:px-16 bg-black bg-opacity-80 text-white rounded-md mx-auto left-0 right-0">
-            <form action="">
+            <form onSubmit={(e) => e.preventDefault()}>
                 <h3 class="text-4xl font-bold mb-8"> {!isSignUp ? "SignIn" : 'SignUp'} </h3>
                 {
                     isSignUp && (<input type="text" class=" block w-full py-3.5 px-5 bg-[#333] focus:bg-[#454545] rounded focus:outline-0 focus:ring-0 focus:border-none border-none placeholder:text-[#8c8c8c]" placeholder="Enter Name" />)
                 }
 
-                <input type="email" class=" block w-full py-3.5 px-5 bg-[#333] focus:bg-[#454545] rounded focus:outline-0 focus:ring-0 focus:border-none border-none placeholder:text-[#8c8c8c]" placeholder="Email or phone number" />
+                <input ref={email} type="email" class=" block w-full py-3.5 px-5 bg-[#333] focus:bg-[#454545] rounded focus:outline-0 focus:ring-0 focus:border-none border-none placeholder:text-[#8c8c8c]" placeholder="Email or phone number" />
 
-                <input type="password" class=" block w-full mt-4 py-3.5 px-5 bg-[#333] focus:bg-[#454545] rounded focus:outline-0 focus:ring-0 focus:border-none placeholder:text-[#8c8c8c] border-none " placeholder="Password" />
-
-                <input type="submit" value={!isSignUp ? 'Sign In' : 'Sign Up'} class="py-3.5 mt-8 bg-[#e50914] text-center block w-full rounded hover:cursor-pointer font-bold text-lg" />
+                <input ref={password} type="password" class=" block w-full mt-4 py-3.5 px-5 bg-[#333] focus:bg-[#454545] rounded focus:outline-0 focus:ring-0 focus:border-none placeholder:text-[#8c8c8c] border-none " placeholder="Password" />
+                {errorMessage!== null && (<p className='text-red-500 py-2'>{errorMessage}</p>)}
+                <input value={!isSignUp ? 'Sign In' : 'Sign Up'} class="py-3.5 mt-8 bg-[#e50914] text-center block w-full rounded hover:cursor-pointer font-bold text-lg" onClick={onSubmitClick} />
 
                 <div class="flex justify-between pt-2 text-sm text-gray-400">
                     <div>
