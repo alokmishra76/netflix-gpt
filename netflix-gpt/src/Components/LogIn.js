@@ -3,12 +3,17 @@ import Header from './Header';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword} from 'firebase/auth';
 import { Validator } from '../utils/Validator';
 import { auth } from '../utils/firebase';
+import { useDispatch } from 'react-redux';
+import { setUserInfo } from '../Slices/UserSlice';
+import { useNavigate } from 'react-router';
 
 const LogIn = () => {
     const [isSignUp, setIsSignUp] = useState(false);
-    const [errorMessage, setErroRMessage] = useState(null)
+    const [errorMessage, setErroRMessage] = useState(null);
+    const dispatch = useDispatch();
     const email = useRef(null);
     const password = useRef(null);
+    const navigate = useNavigate();
 
     const toggleFunctionality = () => {
       setIsSignUp(!isSignUp)
@@ -20,16 +25,21 @@ const LogIn = () => {
         createUserWithEmailAndPassword(auth, email.current.value, password.current.value)
           .then((userCredential) => {
             const user = userCredential.user;
-            console.log("user", user);
+            dispatch(setUserInfo(user));
+            navigate("/browse");
           })
+          .catch((err) => console.log("error", err))
+          
         }
-
         if(!isSignUp) {
             signInWithEmailAndPassword(auth, email.current.value, password.current.value)
                 .then((userCredential) => {
                     // Signed in 
                     const user = userCredential.user;
-                    console.log("user", user)
+                    console.log("user", user);
+                    dispatch(setUserInfo(user));
+                    navigate("/browse");
+
                     // ...
                 })
                 .catch((error) => {
